@@ -1,9 +1,18 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import {
+  DocumentBuilder,
+  SwaggerModule,
+} from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+app.enableCors({
+  origin: 'http://localhost:4200',
+});
+
 
   app.setGlobalPrefix('api');
 
@@ -13,6 +22,31 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
+  );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Mini Amazon API')
+    .setDescription(
+      'API de comercio electrónico desarrollada con NestJS, PostgreSQL y TypeORM',
+    )
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(
+    app,
+    swaggerConfig,
+  );
+
+  SwaggerModule.setup(
+    'docs',
+    app,
+    swaggerDocument,
+    {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    },
   );
 
   await app.listen(process.env.PORT ?? 3000);
